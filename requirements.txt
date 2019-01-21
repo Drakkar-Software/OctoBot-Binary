@@ -1,0 +1,2 @@
+git+git://github.com/Drakkar-Software/pyinstaller@develop
+nltk
