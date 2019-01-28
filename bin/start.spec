@@ -2,13 +2,15 @@
 
 block_cipher = None
 
+# hiddenimports=['numpy.core._dtype_ctypes'] from https://github.com/pyinstaller/pyinstaller/issues/3982
 a = Analysis(['../start.py'],
              pathex=['../'],
              binaries=[],
              datas=[('../interfaces', 'interfaces')],
              hiddenimports=["colorlog", "tulipy", "vaderSentiment", "vaderSentiment.vaderSentiment",
              "tools.decoding_encoding", "newspaper", "pytrends", "pytrends.exceptions", "pytrends.request",
-             "evaluator.Dispatchers.reddit_dispatcher", "evaluator.Dispatchers.twitter_dispatcher"],
+             "evaluator.Dispatchers.reddit_dispatcher", "evaluator.Dispatchers.twitter_dispatcher",
+             "numpy.core._dtype_ctypes"],
              excludes=["tentacles", "logs", "trading.exchanges.websockets_exchanges.implementations.binance_websocket"],
              hookspath=[],
              runtime_hooks=[],
