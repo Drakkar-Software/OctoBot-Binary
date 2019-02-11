@@ -7,8 +7,17 @@ OctoBot binaries is dedicated to create and upload binaries for Windows, Linux a
 
 ## Usage
 Download and move your platform binary into a folder with the an [OctoBot-Launcher](https://github.com/Drakkar-Software/OctoBot-Launcher) binary and start the launcher
+
+### On Windows
+- Just double-click on *OctoBot_windows.exe*
+
+### On Linux and MacOS
+- Open a terminal a type the following commands :
 ```
-./OctoBot-Launcher
+$ chmox +x OctoBot_linux
+$ ./OctoBot_linux
 ```
+
+**Replace `OctoBot_linux` by `OctoBot_osx` on MacOS**
 
 More informations on [OctoBot wiki page](https://github.com/Drakkar-Software/OctoBot/wiki/Installation).
