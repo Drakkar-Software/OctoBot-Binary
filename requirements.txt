@@ -1,2 +1,3 @@
 git+git://github.com/Drakkar-Software/pyinstaller@develop
 nltk
+jsonschema==2.6.0
