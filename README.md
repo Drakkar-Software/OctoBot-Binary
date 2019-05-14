@@ -14,7 +14,7 @@ Download and move your platform binary into a folder with the an [OctoBot-Launch
 ### On Linux and MacOS
 - Open a terminal a type the following commands :
 ```
-$ chmox +x OctoBot_linux
+$ chmod +x OctoBot_linux
 $ ./OctoBot_linux
 ```
 
