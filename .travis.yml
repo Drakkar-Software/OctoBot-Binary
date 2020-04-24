@@ -4,7 +4,7 @@ sudo: enabled
 os: linux
 language: python
 cache: pip
-python: 3.7-dev
+python: 3.7.2-dev
 env:
   global:
     - OCTOBOT_REPOSITORY="https://github.com/Drakkar-Software/OctoBot"
