@@ -4,7 +4,7 @@ sudo: enabled
 os: linux
 language: python
 cache: pip
-python: 3.7-dev
+python: 3.7.2
 env:
   global:
     - OCTOBOT_REPOSITORY="https://github.com/Drakkar-Software/OctoBot"
@@ -50,7 +50,7 @@ script:
 deploy:
   - provider: releases
     api_key:
-      secure: kH0MZaUTCSigXGEEOzpu4Y0iFoWBsjI4eoTQdy4JTWAQ0pp6p3YY4WIvbJRWeQ9xg3WmCCT1KZZQL7jA2VzqLfqNl2qArot3UoGdOPGzhjYPmemIrfrqYsq9Cru0v6X72nHZwv8GfYMRVptzeJCOni8BevmoymH7Y66KqlOOvwgCWjL2PVAhsRMG5FLEvewgXC42N0FZGv+LYQTvr/x2agUkVfUbFT/6yu/y2LroYuAObzx7lQ7HQa9dPo2RG2cdf09rNEI45o8s8s8KCCy+McGyb0XL7Y6rzIPM/JLyiN38bNlkPlE1lvx5HqOvJlLue5fF1ia+2VuxcxHOFuLdi+fd1UevOZMRpZSTyMbqqGSwRcuWqy99RqdWaWPyg+BP8r+iuz78Q1yThcvO+ZloHUuh5q8prbCEb45mieHvEuaXhv4mUklpYXl66C9rFUDwKViD1oKYlYlgpZnJJBBOPTJmCf7ojIDVregNikVHfZMRYtHfQHKoZ9Otb7TeUjOCjXXcMR7lZ1L6ZxFjT/J0FKXBEI1GCqSpbXNoF5b9vo5SZ+982swv0XJll1awIzRk8w7aOz/y0etfb8+taX2e6UVvbncBKyMqdo+mrX/W2V/YZ1RCtcqp6jOMaxn3acK97Og0CRRC1QIPbR6/HA2LuviskuPxekG9Xj/Nuj5o2Pk=
+      secure: gAjl0OOiSMEAgjUFHO4WZGli9EudKvcvDxMXzOkTwxnLXFsLvLiKDAm4y9gZUxZcbGI+RUQmkIJil956fqRhYtoF6QRkmjhi7Pu9XDQL6rAjmpAIMcmgUh+eMIFSN1zPTjQuRZfYKaaEk5H0lxWwnceGJOaEKw8tICxNFytMclOxwYIBBQlLK23rjy77F+AblDvN0Tvko7YnCewZ5nwZf7bHFWY7fxadqctcMVwrfUUEHR4oeTxLrtqTeRPkqdzFIY8CsYBIk57lcVr3m4sMBWUEeCLYoE6s/I2vuerzvJ6kkSqYlVg14gLeI0/501h4y87o3KDUVDLkAvBVRxUbo2Iu7YVxFaxTE6nCE03bAc2xs5nHGmVUblSF2M8poIXzpBK21y57EHMlQDjd8flWy5vcmV32MeAfpwchyKPOVXfdP3k/rq0Mf4T5VREUjgaC3F9ACxUwx7hrTtGgqKHMt2fCz5VA+6MG0MAvN+IX63lajHnk0IiJQMapAzBH53W7AHGv57wqUuSSLNU3wSX3/BfuKci+nqPspiWZyzeCiLQOS62Xsk0aVfSleAerh6zSkg5UYV2uNcbfjUINtvVPPh722RoEnXVGvw6uS+yxkt+1Ss5vgIAqWcW3QzShB+8tVIlya+1yCGA0P1e02+KLS08vvsY5N0de8T1YnfgxnGg=
     file: ./OctoBot_$TRAVIS_OS_NAME
     skip_cleanup: true
     name: Release - $TRAVIS_TAG
