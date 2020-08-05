@@ -1,60 +1,56 @@
 notifications:
   email: false
-sudo: enabled
+dist: xenial
 os: linux
 language: python
 cache: pip
-python: 3.7.2
+python: 3.7-dev
 env:
   global:
     - OCTOBOT_REPOSITORY="https://github.com/Drakkar-Software/OctoBot"
+    - OCTOBOT_BRANCH="0.4.0"
     - OCTOBOT_REPOSITORY_DIR=OctoBot
+
+before_install:
+  - python3 -m pip install --upgrade pip
+  - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
+
+
 install:
-  - git clone $OCTOBOT_REPOSITORY $OCTOBOT_REPOSITORY_DIR
-  - if [[ $TRAVIS_OS_NAME == 'linux' ]]; then sudo bash ./$OCTOBOT_REPOSITORY_DIR/docs/install/linux_dependencies.sh; fi
+  - git clone $OCTOBOT_REPOSITORY -b $OCTOBOT_BRANCH $OCTOBOT_REPOSITORY_DIR
   - python3 -m pip install -r requirements.txt
+  - python3 -m pip install -r $OCTOBOT_REPOSITORY_DIR/requirements.txt
+  - python3 scripts/python_file_lister.py bin/octobot_packages_files.txt $OCTOBOT_REPOSITORY_DIR
+  - python scripts/insert_imports.py $OCTOBOT_REPOSITORY_DIR/octobot/cli.py
+  - cp -R bin $OCTOBOT_REPOSITORY_DIR
   - cd $OCTOBOT_REPOSITORY_DIR
-  - python3 -m pip install -r pre_requirements.txt
-  - python3 -m pip install -r requirements.txt -r dev_requirements.txt
-  - cp ./config/default_config.json ./config.json
-  - python3 start.py -p install all
+  - python3 -m pip install -r requirements.txt
 
-matrix:
+jobs:
   include:
-    - os: osx
-      osx_image: xcode8.3
-      language: generic
-      before_cache:
-        - brew cleanup
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-      before_install:
-        - brew update || travis_terminate 1;
-        - brew upgrade python || brew install python || travis_terminate 1;
-        - python3 -m venv venv || travis_terminate 1;
-        - source venv/bin/activate;
 
-    - os: linux
+    - name: "Linux amd64 - Python 3.7-dev - Installed"
+      stage: test
+      os: linux
+      python: 3.7-dev
       language: python
-
-script:
-  - cd $TRAVIS_BUILD_DIR
-  - mkdir -p ./$OCTOBOT_REPOSITORY_DIR/bin && cp ./bin/start.spec ./$OCTOBOT_REPOSITORY_DIR/bin/start.spec
-  - cd $OCTOBOT_REPOSITORY_DIR
-  - python3 -m nltk.downloader -d $NLTK_DATA words
-  - pyinstaller bin/start.spec
-  - mv dist/OctoBot ./OctoBot_$TRAVIS_OS_NAME && rm -rf dist/
-  - RELEASE_SHASUM=$(openssl sha1 ./OctoBot_$TRAVIS_OS_NAME)
+      script:
+        - cd $TRAVIS_BUILD_DIR
+        - cd $OCTOBOT_REPOSITORY_DIR
+        - python3 setup.py build_ext --inplace
+        - python3 -m nltk.downloader -d $NLTK_DATA words
+        - pyinstaller bin/start.spec
+        - mv dist/OctoBot ./OctoBot_$TRAVIS_OS_NAME && rm -rf dist/
+        - RELEASE_SHASUM=$(openssl sha1 ./OctoBot_$TRAVIS_OS_NAME)
 
 deploy:
   - provider: releases
-    api_key:
+    token:
       secure: gAjl0OOiSMEAgjUFHO4WZGli9EudKvcvDxMXzOkTwxnLXFsLvLiKDAm4y9gZUxZcbGI+RUQmkIJil956fqRhYtoF6QRkmjhi7Pu9XDQL6rAjmpAIMcmgUh+eMIFSN1zPTjQuRZfYKaaEk5H0lxWwnceGJOaEKw8tICxNFytMclOxwYIBBQlLK23rjy77F+AblDvN0Tvko7YnCewZ5nwZf7bHFWY7fxadqctcMVwrfUUEHR4oeTxLrtqTeRPkqdzFIY8CsYBIk57lcVr3m4sMBWUEeCLYoE6s/I2vuerzvJ6kkSqYlVg14gLeI0/501h4y87o3KDUVDLkAvBVRxUbo2Iu7YVxFaxTE6nCE03bAc2xs5nHGmVUblSF2M8poIXzpBK21y57EHMlQDjd8flWy5vcmV32MeAfpwchyKPOVXfdP3k/rq0Mf4T5VREUjgaC3F9ACxUwx7hrTtGgqKHMt2fCz5VA+6MG0MAvN+IX63lajHnk0IiJQMapAzBH53W7AHGv57wqUuSSLNU3wSX3/BfuKci+nqPspiWZyzeCiLQOS62Xsk0aVfSleAerh6zSkg5UYV2uNcbfjUINtvVPPh722RoEnXVGvw6uS+yxkt+1Ss5vgIAqWcW3QzShB+8tVIlya+1yCGA0P1e02+KLS08vvsY5N0de8T1YnfgxnGg=
     file: ./OctoBot_$TRAVIS_OS_NAME
     skip_cleanup: true
     name: Release - $TRAVIS_TAG
-    body: $RELEASE_SHASUM
+    release_notes: $RELEASE_SHASUM
     on:
       repo: Drakkar-Software/OctoBot-Binary
       branch: master

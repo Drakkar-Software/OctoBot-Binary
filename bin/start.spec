@@ -2,16 +2,26 @@
 
 block_cipher = None
 
+OCTOBOT_PACKAGES_FILES = REQUIRED = [s.strip() for s in open('bin/octobot_packages_files.txt').readlines()]
 # hiddenimports=['numpy.core._dtype_ctypes'] from https://github.com/pyinstaller/pyinstaller/issues/3982
 a = Analysis(['../start.py'],
              pathex=['../'],
-             binaries=[],
-             datas=[('../interfaces', 'interfaces')],
-             hiddenimports=["colorlog", "tulipy", "vaderSentiment", "vaderSentiment.vaderSentiment",
-             "tools.decoding_encoding", "newspaper", "simplifiedpytrends", "simplifiedpytrends.exceptions",
-             "simplifiedpytrends.request", "evaluator.Dispatchers.reddit_dispatcher",
-             "evaluator.Dispatchers.twitter_dispatcher", "numpy.core._dtype_ctypes"],
-             excludes=["tentacles", "logs", "trading.exchanges.websockets_exchanges.implementations.binance_websocket"],
+             datas=[
+                ('../octobot/config', 'octobot/config'),
+                ('../octobot/strategy_optimizer/optimizer_data_files', 'octobot/strategy_optimizer/optimizer_data_files')
+             ],
+             hiddenimports=[
+             "colorlog", "numpy.core._dtype_ctypes",
+             "aiosqlite", "aiohttp",
+             "telegram", "telegram.ext", "jsonschema",
+             "tulipy",
+             "praw", "twitter", "simplifiedpytrends", "simplifiedpytrends.exceptions", "simplifiedpytrends.request",
+             "pyngrok", "pyngrok.ngrok", "flask", "flask_login", "wtforms", "flask_wtf", "gevent", "geventwebsocket",
+             "flask_socketio", "newspaper", "vaderSentiment", "vaderSentiment.vaderSentiment",
+             "aiofiles",
+             "ccxt", "ccxt.async_support", "cryptography", "websockets", "yarl", "idna", "sortedcontainers"
+             ] + OCTOBOT_PACKAGES_FILES,
+             excludes=["tentacles", "logs", "user"],
              hookspath=[],
              runtime_hooks=[],
              win_no_prefer_redirects=False,
@@ -26,7 +36,7 @@ exe = EXE(pyz,
           name='OctoBot',
           debug=False,
           strip=False,
-          icon="interfaces/web/static/favicon.ico",
+          icon="bin/favicon.ico",
           upx=True,
           runtime_tmpdir=None,
           console=True )
