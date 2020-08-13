@@ -1,0 +1,144 @@
+trigger:
+  branches:
+    include:
+    - master
+    - 0.4.0
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+      - '*'
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - '*'
+
+variables:
+  OCTOBOT_REPOSITORY: https://github.com/Drakkar-Software/OctoBot.git
+  OCTOBOT_BRANCH: 0.4.0
+  OCTOBOT_REPOSITORY_DIR: OctoBot
+  NLTK_DATA: nltk_data
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  strategy:
+    maxParallel: 2
+    matrix:
+        Python37-32bit-full:
+          PYTHON_VERSION: '3.7'
+          PYTHON_ARCH: 'x86'
+        Python37-64bit-full:
+          PYTHON_VERSION: '3.7'
+          PYTHON_ARCH: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(PYTHON_VERSION)
+      addToPath: true
+      architecture: $(PYTHON_ARCH)
+  - powershell: |
+      git clone -q $env:OCTOBOT_REPOSITORY -b $env:OCTOBOT_BRANCH $env:OCTOBOT_REPOSITORY_DIR
+    displayName: 'Install OctoBot environment'
+  - powershell: |
+      python -m pip install --upgrade pip setuptools wheel
+      python -m pip install --prefer-binary -r requirements.txt
+      python -m pip install --prefer-binary -r "$env:OCTOBOT_REPOSITORY_DIR/requirements.txt"
+    displayName: 'Install dependencies'
+  - powershell: |
+      python scripts/python_file_lister.py bin/octobot_packages_files.txt $env:OCTOBOT_REPOSITORY_DIR
+      python scripts/insert_imports.py "$env:OCTOBOT_REPOSITORY_DIR/octobot/cli.py"
+      Copy-Item bin $env:OCTOBOT_REPOSITORY_DIR -recurse
+    displayName: 'Prepare pyinstaller data'
+  - powershell: |
+      cd $env:OCTOBOT_REPOSITORY_DIR
+      python ../scripts/fetch_nltk_data.py words $env:NLTK_DATA
+    displayName: 'Fetch nltk data'
+  - powershell: |
+      cd $env:OCTOBOT_REPOSITORY_DIR
+      python setup.py build_ext --inplace
+    displayName: 'Compile OctoBot'
+  - powershell: |
+      cd $env:OCTOBOT_REPOSITORY_DIR
+      python -m PyInstaller ./bin/start.spec --log-level=DEBUG
+    displayName: 'Produce binary'
+  - powershell: |
+      cd $env:OCTOBOT_REPOSITORY_DIR
+      Rename-Item dist/OctoBot.exe OctoBot_windows.exe
+      Get-FileHash dist/OctoBot_windows.exe
+    displayName: 'Generate checksum'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(System.DefaultWorkingDirectory)/$(OCTOBOT_REPOSITORY_DIR)/dist/OctoBot_windows.exe'
+      artifactName: 'OctoBot_windows_$(PYTHON_ARCH)'
+  - task: GitHubRelease@0
+    condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
+    displayName: 'Publish release'
+    inputs:
+      gitHubConnection:
+      repositoryName: '$(Build.Repository.Name)'
+      # releaseNotes: '$(RELEASE_SHASUM)' #TODO
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-latest'
+  strategy:
+    maxParallel: 2
+    matrix:
+        Python37-64bit-full:
+          PYTHON_VERSION: '3.7'
+          PYTHON_ARCH: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(PYTHON_VERSION)
+      addToPath: true
+      architecture: $(PYTHON_ARCH)
+  - script: |
+      git clone -q $OCTOBOT_REPOSITORY -b $OCTOBOT_BRANCH $OCTOBOT_REPOSITORY_DIR
+    displayName: 'Install OctoBot environment'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      python -m pip install --prefer-binary -r requirements.txt
+      python -m pip install -r $OCTOBOT_REPOSITORY_DIR/requirements.txt
+    displayName: 'Install dependencies'
+  - script: |
+      python scripts/python_file_lister.py bin/octobot_packages_files.txt $OCTOBOT_REPOSITORY_DIR
+      python scripts/insert_imports.py $OCTOBOT_REPOSITORY_DIR/octobot/cli.py
+      cp -R bin $OCTOBOT_REPOSITORY_DIR
+    displayName: 'Prepare pyinstaller data'
+  - script: |
+      cd $OCTOBOT_REPOSITORY_DIR
+      python ../scripts/fetch_nltk_data.py words $NLTK_DATA
+    displayName: 'Fetch nltk data'
+  - script: |
+      cd $OCTOBOT_REPOSITORY_DIR
+      python setup.py build_ext --inplace
+    displayName: 'Compile OctoBot'
+  - script: |
+      cd $OCTOBOT_REPOSITORY_DIR
+      pyinstaller bin/start.spec
+    displayName: 'Produce binary'
+  - script: |
+      cd $OCTOBOT_REPOSITORY_DIR
+      mv dist/OctoBot dist/OctoBot_macos
+      RELEASE_SHASUM=$(openssl sha1 ./dist/OctoBot_macos)
+      echo "Checksum: $RELEASE_SHASUM"
+    displayName: 'Generate checksum'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(System.DefaultWorkingDirectory)/$(OCTOBOT_REPOSITORY_DIR)/dist'
+      artifactName: 'OctoBot_macos'
+  - task: GitHubRelease@0
+    condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
+    displayName: 'Publish release'
+    inputs:
+      gitHubConnection:
+      repositoryName: '$(Build.Repository.Name)'
+      releaseNotes: '$(RELEASE_SHASUM)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
