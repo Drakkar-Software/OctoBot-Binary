@@ -61,19 +61,12 @@ jobs:
       mkdir dist
       "plop" | Out-File -FilePath dist/OctoBot_windows.exe
       Get-FileHash dist/OctoBot_windows.exe
+      Copy-Item dist/OctoBot_windows.exe $env:BUILD_ARTIFACTSTAGINGDIRECTORY/OctoBot_windows_$env:PYTHON_ARCH.exe
     displayName: 'Generate checksum'
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     inputs:
-      pathToPublish: '$(System.DefaultWorkingDirectory)/$(OCTOBOT_REPOSITORY_DIR)/dist/OctoBot_windows.exe'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'OctoBot_windows_$(PYTHON_ARCH)'
-  - task: GitHubRelease@0
-    condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
-    displayName: 'Publish release'
-    inputs:
-      gitHubConnection:
-      repositoryName: '$(Build.Repository.Name)'
-      # releaseNotes: '$(RELEASE_SHASUM)' #TODO
-      assets: '$(Build.ArtifactStagingDirectory)/*'
 
 - job: macOS
   pool:
@@ -110,17 +103,67 @@ jobs:
       mkdir dist
       echo "plop" > dist/OctoBot_macos
       RELEASE_SHASUM=$(openssl sha1 ./dist/OctoBot_macos)
+      cp dist/OctoBot_macos $(Build.ArtifactStagingDirectory)/
+      ls $(Build.ArtifactStagingDirectory)/
       echo "Checksum: $RELEASE_SHASUM"
+      echo "##vso[task.setvariable variable=RELEASE_SHASUM]$RELEASE_SHASUM"
     displayName: 'Generate checksum'
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     inputs:
-      pathToPublish: '$(System.DefaultWorkingDirectory)/$(OCTOBOT_REPOSITORY_DIR)/dist'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'OctoBot_macos'
-  - task: GitHubRelease@0
-    condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
-    displayName: 'Publish release'
-    inputs:
-      gitHubConnection:
-      repositoryName: '$(Build.Repository.Name)'
-      releaseNotes: '$(RELEASE_SHASUM)'
-      assets: '$(Build.ArtifactStagingDirectory)/*'
+
+- job: Publish_release
+  dependsOn:
+    - Windows
+    - macOS
+#  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)
+      displayName: 'Fetch artifacts'
+    - script: |
+        cd $(Build.ArtifactStagingDirectory)
+        MACOS_RELEASE_SHASUM=$(openssl sha1 ./OctoBot_macos/OctoBot_macos)
+        sha_list=($MACOS_RELEASE_SHASUM)
+        MACOS_RELEASE_SHASUM=${sha_list[1]}
+        echo "MACOS_RELEASE_SHASUM: $MACOS_RELEASE_SHASUM"
+        WX86_RELEASE_SHASUM=$(openssl sha1 ./OctoBot_windows_x86/OctoBot_windows_x86.exe)
+        sha_list=($WX86_RELEASE_SHASUM)
+        WX86_RELEASE_SHASUM=${sha_list[1]}
+        echo "WX86_RELEASE_SHASUM: $WX86_RELEASE_SHASUM"
+        WX64_RELEASE_SHASUM=$(openssl sha1 ./OctoBot_windows_x64/OctoBot_windows_x64.exe)
+        sha_list=($WX64_RELEASE_SHASUM)
+        WX64_RELEASE_SHASUM=${sha_list[1]}
+        echo "WX64_RELEASE_SHASUM: $WX64_RELEASE_SHASUM"
+        SHA_TABLE="| Binary   |      SHA1\n|----------|:-------------:|\n| OctoBot_linux | https://travis-ci.com/github/Drakkar-Software/OctoBot-Binary |\n| OctoBot_windows_x64.exe | $WX64_RELEASE_SHASUM |\n| OctoBot_windows_x86.exe | $WX86_RELEASE_SHASUM |\n| OctoBot_macos | $MACOS_RELEASE_SHASUM |"
+        echo -e "SHA table:\n$SHA_TABLE"
+        echo "##vso[task.setvariable variable=SHA_TABLE]$SHA_TABLE"
+      displayName: 'Generate checksums'
+    - script: |
+        tags=$(git tag --sort=-creatordate)
+        tags_list=($tags)
+        tag=${tags_list[0]}
+        echo "Tag: $tag"
+        echo -e "SHA table:\n$SHA_TABLE"
+        echo -e $SHA_TABLE > $(Build.ArtifactStagingDirectory)/release_notes.txt
+        echo "##vso[task.setvariable variable=TAG]$tag"
+
+      displayName: 'Prepare variables'
+    - task: GitHubRelease@0
+      condition: startsWith(variables['build.sourceBranch'], 'refs/tags/')
+      displayName: 'Publish release'
+      inputs:
+        gitHubConnection: drakkar_software
+        repositoryName: '$(Build.Repository.Name)'
+        action: 'edit'
+        title: 'Release - $(TAG)'
+        tag: '$(TAG)'
+        releaseNotesFile: '$(Build.ArtifactStagingDirectory)/release_notes.txt'
+        addChangeLog: false
+        assetUploadMode: 'replace'
+        assets: |
+          $(Build.ArtifactStagingDirectory)/OctoBot_macos/*
+          $(Build.ArtifactStagingDirectory)/OctoBot_windows_x86/*
+          $(Build.ArtifactStagingDirectory)/OctoBot_windows_x64/*

@@ -37,9 +37,9 @@ deploy:
       secure: gAjl0OOiSMEAgjUFHO4WZGli9EudKvcvDxMXzOkTwxnLXFsLvLiKDAm4y9gZUxZcbGI+RUQmkIJil956fqRhYtoF6QRkmjhi7Pu9XDQL6rAjmpAIMcmgUh+eMIFSN1zPTjQuRZfYKaaEk5H0lxWwnceGJOaEKw8tICxNFytMclOxwYIBBQlLK23rjy77F+AblDvN0Tvko7YnCewZ5nwZf7bHFWY7fxadqctcMVwrfUUEHR4oeTxLrtqTeRPkqdzFIY8CsYBIk57lcVr3m4sMBWUEeCLYoE6s/I2vuerzvJ6kkSqYlVg14gLeI0/501h4y87o3KDUVDLkAvBVRxUbo2Iu7YVxFaxTE6nCE03bAc2xs5nHGmVUblSF2M8poIXzpBK21y57EHMlQDjd8flWy5vcmV32MeAfpwchyKPOVXfdP3k/rq0Mf4T5VREUjgaC3F9ACxUwx7hrTtGgqKHMt2fCz5VA+6MG0MAvN+IX63lajHnk0IiJQMapAzBH53W7AHGv57wqUuSSLNU3wSX3/BfuKci+nqPspiWZyzeCiLQOS62Xsk0aVfSleAerh6zSkg5UYV2uNcbfjUINtvVPPh722RoEnXVGvw6uS+yxkt+1Ss5vgIAqWcW3QzShB+8tVIlya+1yCGA0P1e02+KLS08vvsY5N0de8T1YnfgxnGg=
     file: ./OctoBot_$TRAVIS_OS_NAME
     skip_cleanup: true
-    name: Release - $TRAVIS_TAG
+    name: Release - waiting for azure pipelines to complete
     release_notes: $RELEASE_SHASUM
     on:
       repo: Drakkar-Software/OctoBot-Binary
-      branch: master
+      branch: gh_release
       tags: true
