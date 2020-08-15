@@ -17,14 +17,6 @@ before_install:
 
 install:
   - git clone $OCTOBOT_REPOSITORY -b $OCTOBOT_BRANCH $OCTOBOT_REPOSITORY_DIR
-  - python3 -m pip install -r requirements.txt
-  - python3 -m pip install -r $OCTOBOT_REPOSITORY_DIR/requirements.txt
-  - python3 scripts/python_file_lister.py bin/octobot_packages_files.txt $OCTOBOT_REPOSITORY_DIR
-  - python3 scripts/insert_imports.py $OCTOBOT_REPOSITORY_DIR/octobot/cli.py
-  - cp -R bin $OCTOBOT_REPOSITORY_DIR
-  - cd $TRAVIS_BUILD_DIR
-  - cd $OCTOBOT_REPOSITORY_DIR
-  - python3 ../scripts/fetch_nltk_data.py words $NLTK_DATA
 
 jobs:
   include:
@@ -35,12 +27,9 @@ jobs:
       python: 3.7-dev
       language: python
       script:
-        - cd $TRAVIS_BUILD_DIR
-        - cd $OCTOBOT_REPOSITORY_DIR
-        - python3 setup.py build_ext --inplace
-        - pyinstaller bin/start.spec
-        - mv dist/OctoBot ./OctoBot_$TRAVIS_OS_NAME && rm -rf dist/
+        - echo "plop" > OctoBot_$TRAVIS_OS_NAME
         - RELEASE_SHASUM=$(openssl sha1 ./OctoBot_$TRAVIS_OS_NAME)
+        - echo $RELEASE_SHASUM
 
 deploy:
   - provider: releases
