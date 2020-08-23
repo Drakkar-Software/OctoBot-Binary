@@ -1,7 +1,7 @@
 # OctoBot-Binary [0.4.0-alpha21](https://github.com/Drakkar-Software/OctoBot/tree/dev/docs/CHANGELOG.md)
 [![Release](https://img.shields.io/github/downloads/Drakkar-Software/OctoBot-Binary/total.svg)](https://github.com/Drakkar-Software/OctoBot-Binary/releases)
 [![Build Status](https://travis-ci.com/Drakkar-Software/OctoBot-Binary.svg?branch=master)](https://travis-ci.com/Drakkar-Software/OctoBot-Binary) 
-[![Build status](https://ci.appveyor.com/api/projects/status/c653oepp67qdwnb5?svg=true)](https://ci.appveyor.com/project/Herklos/octobot-binary)
+[![Build Status](https://dev.azure.com/drakkarsoftware/OctoBot-Binary/_apis/build/status/Drakkar-Software.OctoBot-Binary?branchName=0.4.0)](https://dev.azure.com/drakkarsoftware/OctoBot-Binary/_build/latest?definitionId=13&branchName=0.4.0)
 
 OctoBot binaries is dedicated to create and upload binaries for Windows, Linux and MacOS each [OctoBot project](https://github.com/Drakkar-Software/OctoBot) release.
 
