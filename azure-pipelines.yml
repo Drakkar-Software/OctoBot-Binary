@@ -140,7 +140,7 @@ jobs:
       displayName: 'Fetch artifacts'
     - script: |
         cd $(Build.ArtifactStagingDirectory)
-        MACOSX64_RELEASE_SHASUM=$(openssl sha1 ./OctoBot_macos/OctoBot_macos)
+        MACOSX64_RELEASE_SHASUM=$(openssl sha1 ./OctoBot_macos/OctoBot_macos_x64)
         sha_list=($MACOSX64_RELEASE_SHASUM)
         MACOSX64_RELEASE_SHASUM=${sha_list[1]}
         echo "MACOSX64_RELEASE_SHASUM: $MACOSX64_RELEASE_SHASUM"
