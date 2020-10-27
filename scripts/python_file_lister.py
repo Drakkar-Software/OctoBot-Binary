@@ -6,6 +6,7 @@ import site
 INIT_FILE = "__init__.py"
 HANDLED_EXT = {".py", ".pyd", ".so"}
 OCTOBOT_PREFIX = "octobot"
+OTHER_MODULES = set("async_channel", )
 
 
 def _is_file_to_handle(entry):
@@ -31,7 +32,8 @@ def _explore_module(package_entry, root=""):
 
 def _get_octobot_packages(packages_path):
     for entry in os.scandir(packages_path):
-        if entry.name.startswith(OCTOBOT_PREFIX) and not entry.name.endswith("-info"):
+        if (entry.name.startswith(OCTOBOT_PREFIX) or entry.name in OTHER_MODULES) \
+                and not entry.name.endswith("-info"):
             yield entry
 
 
