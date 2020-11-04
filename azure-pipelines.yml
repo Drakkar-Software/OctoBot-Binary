@@ -65,7 +65,7 @@ jobs:
     displayName: 'Compile OctoBot'
   - script: |
       cd %OCTOBOT_REPOSITORY_DIR%
-      python -m PyInstaller ./bin/start.spec --log-level=DEBUG --clean
+      python -m PyInstaller ./bin/start.spec --log-level=INFO --clean
     displayName: 'Produce binary'
   - powershell: |
       cd $env:OCTOBOT_REPOSITORY_DIR
@@ -118,7 +118,7 @@ jobs:
     displayName: 'Compile OctoBot'
   - script: |
       cd $OCTOBOT_REPOSITORY_DIR
-      python -m PyInstaller ./bin/start.spec --log-level=DEBUG --clean
+      python -m PyInstaller ./bin/start.spec --log-level=INFO --clean
     displayName: 'Produce binary'
   - script: |
       cd $OCTOBOT_REPOSITORY_DIR
