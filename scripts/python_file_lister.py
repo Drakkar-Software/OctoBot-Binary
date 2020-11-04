@@ -6,7 +6,7 @@ import site
 INIT_FILE = "__init__.py"
 HANDLED_EXT = {".py", ".pyd", ".so"}
 OCTOBOT_PREFIX = "octobot"
-OTHER_MODULES = set("async_channel", )
+OTHER_MODULES = ["async_channel"]
 
 
 def _is_file_to_handle(entry):
