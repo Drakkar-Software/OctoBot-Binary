@@ -48,6 +48,7 @@ jobs:
       python -m pip install --upgrade pip setuptools wheel
       python -m pip install --prefer-binary -r requirements.txt
       python -m pip install --prefer-binary -r "%OCTOBOT_REPOSITORY_DIR%/requirements.txt"
+      python -m pip freeze
     displayName: 'Install dependencies'
   - powershell: |
       python scripts/python_file_lister.py bin/octobot_packages_files.txt $env:OCTOBOT_REPOSITORY_DIR
@@ -100,6 +101,7 @@ jobs:
       python -m pip install --upgrade pip setuptools wheel
       python -m pip install --prefer-binary -r requirements.txt
       python -m pip install -r $OCTOBOT_REPOSITORY_DIR/requirements.txt
+      python -m pip freeze
     displayName: 'Install dependencies'
   - script: |
       python scripts/python_file_lister.py bin/octobot_packages_files.txt $OCTOBOT_REPOSITORY_DIR
@@ -116,12 +118,12 @@ jobs:
     displayName: 'Compile OctoBot'
   - script: |
       cd $OCTOBOT_REPOSITORY_DIR
-      python -m PyInstaller bin/start.spec --log-level=DEBUG --clean
+      python -m PyInstaller ./bin/start.spec --log-level=DEBUG --clean
     displayName: 'Produce binary'
   - script: |
       cd $OCTOBOT_REPOSITORY_DIR
       mv dist/OctoBot dist/OctoBot_macos
-      ls dist
+      ls -al dist
       RELEASE_SHASUM=$(openssl sha1 ./dist/OctoBot_macos)
       echo "Checksum: $RELEASE_SHASUM"
       cp dist/OctoBot_macos $(Build.ArtifactStagingDirectory)/OctoBot_macos_$PYTHON_ARCH
