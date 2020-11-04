@@ -69,6 +69,7 @@ jobs:
   - powershell: |
       cd $env:OCTOBOT_REPOSITORY_DIR
       Rename-Item dist/OctoBot.exe OctoBot_windows.exe
+      ls dist
       Get-FileHash dist/OctoBot_windows.exe
       Copy-Item dist/OctoBot_windows.exe $env:BUILD_ARTIFACTSTAGINGDIRECTORY/OctoBot_windows_$env:PYTHON_ARCH.exe
     displayName: 'Generate checksum'
@@ -120,6 +121,7 @@ jobs:
   - script: |
       cd $OCTOBOT_REPOSITORY_DIR
       mv dist/OctoBot dist/OctoBot_macos
+      ls dist
       RELEASE_SHASUM=$(openssl sha1 ./dist/OctoBot_macos)
       echo "Checksum: $RELEASE_SHASUM"
       cp dist/OctoBot_macos $(Build.ArtifactStagingDirectory)/OctoBot_macos_$PYTHON_ARCH
