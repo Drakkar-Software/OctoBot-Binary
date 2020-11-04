@@ -50,7 +50,7 @@ def explore_packages(packages_paths, target_file):
 
 if __name__ == "__main__":
     print(f"site.getsitepackages(): {site.getsitepackages()}")
-    site_packages = site.getsitepackages()[-1]
+    site_packages = [s for s in site.getsitepackages() if "site-packages" in s]
     bot_package = sys.argv[2] if len(sys.argv) > 2 else "."
     print(f"exploring {site_packages}")
-    explore_packages([site_packages, bot_package], sys.argv[1])
+    explore_packages(site_packages + [bot_package], sys.argv[1])
