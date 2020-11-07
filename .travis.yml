@@ -38,6 +38,7 @@ jobs:
         - mv dist/OctoBot ./OctoBot_$TRAVIS_OS_NAME && rm -rf dist/
         - RELEASE_SHASUM=$(openssl sha1 ./OctoBot_$TRAVIS_OS_NAME)
         - echo $RELEASE_SHASUM
+        - ./OctoBot_$TRAVIS_OS_NAME --version
 
 deploy:
   - provider: releases
