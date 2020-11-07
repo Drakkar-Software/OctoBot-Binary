@@ -18,7 +18,7 @@ pr:
 
 variables:
   OCTOBOT_REPOSITORY: https://github.com/Drakkar-Software/OctoBot.git
-  OCTOBOT_BRANCH: 0.4.0
+  OCTOBOT_BRANCH: update_requirements
   OCTOBOT_REPOSITORY_DIR: OctoBot
   NLTK_DATA: nltk_data
 
@@ -45,7 +45,7 @@ jobs:
       git clone -q $env:OCTOBOT_REPOSITORY -b $env:OCTOBOT_BRANCH $env:OCTOBOT_REPOSITORY_DIR
     displayName: 'Install OctoBot environment'
   - script: |
-      python -m pip install --upgrade pip setuptools wheel
+      python -m pip install --upgrade pip setuptools wheel cython==0.29.21
       python -m pip install --prefer-binary -r requirements.txt
       python -m pip install --prefer-binary -r "%OCTOBOT_REPOSITORY_DIR%/requirements.txt"
       python -m pip freeze
