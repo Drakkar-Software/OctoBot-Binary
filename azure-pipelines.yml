@@ -73,6 +73,7 @@ jobs:
       ls dist
       Get-FileHash dist/OctoBot_windows.exe
       Copy-Item dist/OctoBot_windows.exe $env:BUILD_ARTIFACTSTAGINGDIRECTORY/OctoBot_windows_$env:PYTHON_ARCH.exe
+      dist/OctoBot_windows.exe --version
     displayName: 'Generate checksum'
   - task: PublishPipelineArtifact@1
     inputs:
@@ -127,6 +128,7 @@ jobs:
       RELEASE_SHASUM=$(openssl sha1 ./dist/OctoBot_macos)
       echo "Checksum: $RELEASE_SHASUM"
       cp dist/OctoBot_macos $(Build.ArtifactStagingDirectory)/OctoBot_macos_$PYTHON_ARCH
+      dist/OctoBot_macos --version
     displayName: 'Generate checksum'
   - task: PublishPipelineArtifact@1
     inputs:
