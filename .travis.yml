@@ -8,11 +8,12 @@ python: 3.8-dev
 env:
   global:
     - OCTOBOT_REPOSITORY="https://github.com/Drakkar-Software/OctoBot"
-    - OCTOBOT_BRANCH="0.4.0"
+    - OCTOBOT_BRANCH="update_requirements"
     - OCTOBOT_REPOSITORY_DIR=OctoBot
+    - NLTK_DATA=nltk_data
 
 before_install:
-  - python3 -m pip install --upgrade pip
+  - python3 -m pip install --upgrade pip wheel
 
 install:
   - git clone $OCTOBOT_REPOSITORY -b $OCTOBOT_BRANCH $OCTOBOT_REPOSITORY_DIR
@@ -33,7 +34,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR
         - cd $OCTOBOT_REPOSITORY_DIR
         - python3 setup.py build_ext --inplace
-        - pyinstaller bin/start.spec
+        - python3 -m PyInstaller bin/start.spec
         - mv dist/OctoBot ./OctoBot_$TRAVIS_OS_NAME && rm -rf dist/
         - RELEASE_SHASUM=$(openssl sha1 ./OctoBot_$TRAVIS_OS_NAME)
         - echo $RELEASE_SHASUM
