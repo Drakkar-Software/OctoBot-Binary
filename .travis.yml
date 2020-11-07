@@ -8,7 +8,7 @@ python: 3.8-dev
 env:
   global:
     - OCTOBOT_REPOSITORY="https://github.com/Drakkar-Software/OctoBot"
-    - OCTOBOT_BRANCH="update_requirements"
+    - OCTOBOT_BRANCH="0.4.0"
     - OCTOBOT_REPOSITORY_DIR=OctoBot
     - NLTK_DATA=nltk_data
 
@@ -50,5 +50,5 @@ deploy:
     release_notes: $RELEASE_SHASUM
     on:
       repo: Drakkar-Software/OctoBot-Binary
-      branch: add_az_CI
+      branch: 0.4.0
       tags: true
