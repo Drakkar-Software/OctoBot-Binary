@@ -139,11 +139,12 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            OctoBot ${{ steps.vars.outputs.tag }} binaries sha256sum :
-            - Linux x64: ${{ steps.hashes.outputs.octobot_linux_x64_hash }}
-            - MacOs x64: ${{ steps.hashes.outputs.octobot_macos_x64_hash }}
-            - Windows x86: ${{ steps.hashes.outputs.octobot_windows_x86_hash }}
-            - Windows x64: ${{ steps.hashes.outputs.octobot_windows_x64_hash }}
+            | Binary        | SHA256        |
+            | ------------- |:-------------:|
+            | OctoBot_windows_x86.exe | ${{ steps.hashes.outputs.octobot_windows_x86_hash }} |
+            | OctoBot_windows_x64.exe | ${{ steps.hashes.outputs.octobot_windows_x64_hash }} |
+            | OctoBot_linux_x64 | ${{ steps.hashes.outputs.octobot_linux_x64_hash }} |
+            | OctoBot_macos_x64 | ${{ steps.hashes.outputs.octobot_macos_x64_hash }} |
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
