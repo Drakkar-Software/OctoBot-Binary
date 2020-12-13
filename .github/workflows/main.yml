@@ -2,28 +2,9 @@ name: OctoBot-Binary-CI
 on: push
 
 jobs:
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    outputs:
-      release-url-output: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Create Release
-        id: create_release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
   builds:
     name: ${{ matrix.os }}${{ matrix.arch }} - Python 3.8 - build
     runs-on: ${{ matrix.os }}
-    needs: create-release
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
@@ -63,8 +44,6 @@ jobs:
         python setup.py build_ext --inplace
         python -m PyInstaller bin/start.spec
         mv dist/OctoBot ./OctoBot_${{ matrix.os }}_${{ matrix.arch }} && rm -rf dist/
-        RELEASE_SHASUM=$(openssl sha1 ./OctoBot_${{ matrix.os }}_${{ matrix.arch }})
-        echo $RELEASE_SHASUM
         ./OctoBot_${{ matrix.os }}_${{ matrix.arch }} --version
 
     - name: Build OctoBot Binary on Windows
@@ -88,32 +67,123 @@ jobs:
         python setup.py build_ext --inplace
         python -m PyInstaller bin/start.spec
         Rename-Item dist/OctoBot.exe OctoBot_windows.exe
-        Get-FileHash dist/OctoBot_windows.exe
-        Copy-Item dist/OctoBot_windows.exe OctoBot_windows_${{ matrix.arch }}.exe
+        Copy-Item dist/OctoBot_windows.exe OctoBot_windows.exe
         dist/OctoBot_windows.exe --version
 
-    - name: Upload Release Asset
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && matrix.os != 'windows-latest'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OCTOBOT_REPOSITORY_DIR: OctoBot
+    - uses: actions/upload-artifact@v2
+      if: matrix.os != 'windows-latest'
       with:
-        upload_url: ${{ needs.create-release.outputs.release-url-output }}
-        asset_path: OctoBot/OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        asset_name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        asset_content_type: application/x-binary
+        name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        path: OctoBot/OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        if-no-files-found: error
 
-    - name: Upload Release Asset
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && matrix.os == 'windows-latest'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'windows-latest'
       with:
-        upload_url: ${{ needs.create-release.outputs.release-url-output }}
-        asset_path: OctoBot/OctoBot_windows_${{ matrix.arch }}.exe
-        asset_name: OctoBot_windows_${{ matrix.arch }}.exe
-        asset_content_type: application/x-binary
+        name: OctoBot_windows_${{ matrix.arch }}
+        path: OctoBot/dist/OctoBot_windows.exe
+        if-no-files-found: error
+
+  create-release:
+    name: Create Release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    needs: builds
+    runs-on: ubuntu-latest
+    outputs:
+      release-url-output: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Set version as environement var
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+      - name: Download Windows x86 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: OctoBot_windows_x86
+          path: OctoBot_windows_x86.exe
+
+      - name: Download Windows x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: OctoBot_windows_x64
+          path: OctoBot_windows_x64.exe
+
+      - name: Download Linux x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: OctoBot_ubuntu-latest_x64
+          path: OctoBot_linux_x64
+
+      - name: Download MacOs x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: OctoBot_macos-latest_x64
+          path: OctoBot_macos_x64
+
+      - name: Compute hashes
+        id: hashes
+        run: |
+          echo ::set-output name=octobot_linux_x64_hash::$(openssl sha256 OctoBot_linux_x64/OctoBot_ubuntu-latest_x64 | awk '{print $2}')
+          echo ::set-output name=octobot_macos_x64_hash::$(openssl sha256 OctoBot_macos_x64/OctoBot_macos-latest_x64 | awk '{print $2}')
+          echo ::set-output name=octobot_windows_x64_hash::$(openssl sha256 OctoBot_windows_x64.exe/OctoBot_windows.exe | awk '{print $2}')
+          echo ::set-output name=octobot_windows_x86_hash::$(openssl sha256 OctoBot_windows_x86.exe/OctoBot_windows.exe | awk '{print $2}')
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          release_name: Release - ${{ steps.vars.outputs.tag }}
+          draft: false
+          prerelease: false
+          body: |
+            OctoBot ${{ steps.vars.outputs.tag }} binaries sha256sum :
+            - Linux x64: ${{ steps.hashes.outputs.octobot_linux_x64_hash }}
+            - MacOs x64: ${{ steps.hashes.outputs.octobot_macos_x64_hash }}
+            - Windows x86: ${{ steps.hashes.outputs.octobot_windows_x86_hash }}
+            - Windows x64: ${{ steps.hashes.outputs.octobot_windows_x64_hash }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./OctoBot_windows_x86.exe/OctoBot_windows.exe
+          asset_name: OctoBot_windows_x86.exe
+          asset_content_type: application/x-binary
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./OctoBot_windows_x64.exe/OctoBot_windows.exe
+          asset_name: OctoBot_windows_x64.exe
+          asset_content_type: application/x-binary
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: OctoBot_linux_x64/OctoBot_ubuntu-latest_x64
+          asset_name: OctoBot_linux_x64
+          asset_content_type: application/x-binary
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: OctoBot_macos_x64/OctoBot_macos-latest_x64
+          asset_name: OctoBot_macos_x64
+          asset_content_type: application/x-binary
 
   notify:
     name: Notify
