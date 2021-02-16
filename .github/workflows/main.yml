@@ -8,15 +8,11 @@ jobs:
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        arch: [ x64, x86 ]
-        exclude:
-          - os: macos-latest # currently not supported
-            arch: x86
-          - os: ubuntu-latest # currently not supported
-            arch: x86
+        arch: [ x64 ]
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -96,12 +92,6 @@ jobs:
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
-      - name: Download Windows x86 artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: OctoBot_windows_x86
-          path: OctoBot_windows_x86.exe
-
       - name: Download Windows x64 artifact
         uses: actions/download-artifact@v2
         with:
@@ -126,7 +116,6 @@ jobs:
           echo ::set-output name=octobot_linux_x64_hash::$(openssl sha256 OctoBot_linux_x64/OctoBot_ubuntu-latest_x64 | awk '{print $2}')
           echo ::set-output name=octobot_macos_x64_hash::$(openssl sha256 OctoBot_macos_x64/OctoBot_macos-latest_x64 | awk '{print $2}')
           echo ::set-output name=octobot_windows_x64_hash::$(openssl sha256 OctoBot_windows_x64.exe/OctoBot_windows.exe | awk '{print $2}')
-          echo ::set-output name=octobot_windows_x86_hash::$(openssl sha256 OctoBot_windows_x86.exe/OctoBot_windows.exe | awk '{print $2}')
 
       - name: Create Release
         id: create_release
@@ -141,20 +130,9 @@ jobs:
           body: |
             | Binary        | SHA256        |
             | ------------- |:-------------:|
-            | OctoBot_windows_x86.exe | ${{ steps.hashes.outputs.octobot_windows_x86_hash }} |
             | OctoBot_windows_x64.exe | ${{ steps.hashes.outputs.octobot_windows_x64_hash }} |
             | OctoBot_linux_x64 | ${{ steps.hashes.outputs.octobot_linux_x64_hash }} |
             | OctoBot_macos_x64 | ${{ steps.hashes.outputs.octobot_macos_x64_hash }} |
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./OctoBot_windows_x86.exe/OctoBot_windows.exe
-          asset_name: OctoBot_windows_x86.exe
-          asset_content_type: application/x-binary
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
