@@ -97,4 +97,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-\.idea/
+.idea
+tentacles
+user
+logs
