@@ -30,31 +30,50 @@ from tests import get_binary_file_path, clear_octobot_previous_folders, get_log_
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+BINARY_DISABLE_WEB_OPTION = "-nw"
+
 
 @pytest.fixture
 def start_binary():
     clear_octobot_previous_folders()
     with TemporaryFile() as output, TemporaryFile() as err:
-        binary_process = subprocess.Popen(get_binary_file_path(),
-                                          shell=True,
-                                          stdout=output,
-                                          stderr=err,
-                                          preexec_fn=os.setsid if not is_on_windows() else None)
-        logger.debug("Starting binary process...")
+        binary_process = create_binary("", output, err)
         yield
-        logger.info(output.read())
-        errors = err.read()
-        if errors:
-            logger.error(errors)
-            raise ValueError(f"Error happened during process execution : {errors}")
-        logger.debug("Killing binary process...")
-        if is_on_windows():
+        terminate_binary(binary_process, output, err)
+
+
+@pytest.fixture
+def start_binary_without_web_app():
+    clear_octobot_previous_folders()
+    with TemporaryFile() as output, TemporaryFile() as err:
+        binary_process = create_binary(BINARY_DISABLE_WEB_OPTION, output, err)
+        yield
+        terminate_binary(binary_process, output, err)
+
+
+def create_binary(binary_options, output_file, err_file):
+    logger.debug("Starting binary process...")
+    return subprocess.Popen(f"{get_binary_file_path()} {binary_options}",
+                            shell=True,
+                            stdout=output_file,
+                            stderr=err_file,
+                            preexec_fn=os.setsid if not is_on_windows() else None)
+
+
+def terminate_binary(binary_process, output_file, err_file):
+    logger.info(output_file.read())
+    errors = err_file.read()
+    if errors:
+        logger.error(errors)
+        raise ValueError(f"Error happened during process execution : {errors}")
+    logger.debug("Killing binary process...")
+    if is_on_windows():
+        binary_process.kill()
+    else:
+        try:
+            os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
+        except ProcessLookupError:
             binary_process.kill()
-        else:
-            try:
-                os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
-            except ProcessLookupError:
-                binary_process.kill()
 
 
 def test_version_endpoint(start_binary):
@@ -71,14 +90,14 @@ def test_version_endpoint(start_binary):
     assert attempt <= max_attempts
 
 
-def test_evaluation_state_created(start_binary):
+def test_evaluation_state_created(start_binary_without_web_app):
     time.sleep(10)
     log_content = get_log_file_content()
     logger.debug(log_content)
     assert "new state:" in log_content
 
 
-def test_logs_content_has_no_errors(start_binary):
+def test_logs_content_has_no_errors(start_binary_without_web_app):
     time.sleep(10)
     log_content = get_log_file_content()
     logger.debug(log_content)
