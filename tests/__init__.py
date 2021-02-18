@@ -18,8 +18,12 @@ import platform
 import shutil
 
 
+def is_on_windows():
+    return platform.system() == "Windows"
+
+
 def get_binary_file_path() -> str:
-    if platform.system() == "Windows":
+    if is_on_windows():
         return "OctoBot_windows_x64.exe"
     elif platform.system() == "Darwin":
         return "./OctoBot_macos_x64"
