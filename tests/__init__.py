@@ -24,11 +24,11 @@ def is_on_windows():
 
 def get_binary_file_path() -> str:
     if is_on_windows():
-        return "OctoBot_windows_x64.exe"
+        return "OctoBot_windows_x64.exe/OctoBot_windows.exe"
     elif platform.system() == "Darwin":
-        return "./OctoBot_macos_x64"
+        return "./OctoBot_macos_x64/OctoBot_macos-latest_x64"
     else:
-        return "./OctoBot_linux_x64"
+        return "./OctoBot_linux_x64/OctoBot_ubuntu-latest_x64"
 
 
 def delete_folder_if_exists(folder_path):
