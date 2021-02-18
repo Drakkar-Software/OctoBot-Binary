@@ -19,12 +19,13 @@ import signal
 import subprocess
 from tempfile import TemporaryFile
 
+import platform
 import requests
 import time
 
 import pytest
 
-from tests import get_binary_file_path, clear_octobot_previous_folders, get_log_file_content
+from tests import get_binary_file_path, clear_octobot_previous_folders, get_log_file_content, is_on_windows
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -38,7 +39,7 @@ def start_binary():
                                           shell=True,
                                           stdout=output,
                                           stderr=err,
-                                          preexec_fn=os.setsid)
+                                          preexec_fn=os.setsid if not is_on_windows() else None)
         logger.debug("Starting binary process...")
         yield
         logger.info(output.read())
@@ -47,7 +48,13 @@ def start_binary():
             logger.error(errors)
             raise ValueError(f"Error happened during process execution : {errors}")
         logger.debug("Killing binary process...")
-        os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
+        if is_on_windows():
+            binary_process.kill()
+        else:
+            try:
+                os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            except ProcessLookupError:
+                binary_process.kill()
 
 
 def test_version_endpoint(start_binary):
