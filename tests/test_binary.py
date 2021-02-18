@@ -102,3 +102,10 @@ def test_logs_content_has_no_errors(start_binary_without_web_app):
     log_content = get_log_file_content()
     logger.debug(log_content)
     assert "ERROR" not in log_content
+
+
+def test_balance_profitability_updated(start_binary_without_web_app):
+    time.sleep(10)
+    log_content = get_log_file_content()
+    logger.debug(log_content)
+    assert "BALANCE PROFITABILITY :" in log_content
