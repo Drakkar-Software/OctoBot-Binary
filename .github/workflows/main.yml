@@ -134,7 +134,7 @@ jobs:
       - name: Test OctoBot Binary on Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
-          chmod +x OctoBot_linux_x64
+          chmod +x OctoBot_linux_x64/OctoBot_ubuntu-latest_x64
           pytest tests
 
       - name: Download MacOs x64 artifact
@@ -147,7 +147,7 @@ jobs:
       - name: Test OctoBot Binary on MacOs
         if: matrix.os == 'macos-latest'
         run: |
-          chmod +x OctoBot_macos_x64
+          chmod +x OctoBot_macos_x64/OctoBot_macos-latest_x64
           pytest tests
 
   create-release:
