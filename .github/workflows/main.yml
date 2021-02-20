@@ -125,6 +125,8 @@ jobs:
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           release_name: Release - ${{ steps.vars.outputs.tag }}
+          owner: ${{ github.repository_owner }}
+          repo: OctoBot
           draft: false
           prerelease: false
           body: |
