@@ -19,28 +19,49 @@ jobs:
         python-version: '3.8.x'
         architecture: ${{ matrix.arch }}
 
-    - name: Build OctoBot Binary on Unix
-      if: matrix.os != 'windows-latest'
+    - name: Set up QEMU
+      if: matrix.os == 'ubuntu-latest'
+      uses: docker/setup-qemu-action@v1
+
+    - name: Set up Docker Buildx
+      if: matrix.os == 'ubuntu-latest'
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build OctoBot Binary on Linux
+      if: matrix.os == 'ubuntu-latest'
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        builder: ${{ steps.buildx.outputs.name }}
+        platforms: linux/amd64,linux/arm64
+        push: false
+        load: true
+        tags: octobot_builder:latest
+        build-args: |
+          GH_REPO=Drakkar-Software/OctoBot-Tentacles
+          OCTOBOT_GH_REPO=https://github.com/Drakkar-Software/OctoBot.git
+          OCTOBOT_DEFAULT_BRANCH=dev
+          OCTOBOT_REPOSITORY_DIR=OctoBot
+          NLTK_DATA=nltk_data
+          BUILD_ARCH=${{ matrix.arch }}
+
+    - name: Extract OctoBot binary from image
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        docker create --name extract octobot_builder:latest
+        docker cp extract:/build/OctoBot_${{ matrix.arch }} OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        docker rm extract
+
+    - name: Build OctoBot Binary on MacOS
+      if: matrix.os == 'macos-latest'
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
         OCTOBOT_DEFAULT_BRANCH: dev
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
-      run: |
-        pip install -U pip setuptools wheel
-        pip install -r requirements.txt
-        git clone -q $OCTOBOT_GH_REPO -b $OCTOBOT_DEFAULT_BRANCH
-        pip install --prefer-binary -r $OCTOBOT_REPOSITORY_DIR/dev_requirements.txt -r $OCTOBOT_REPOSITORY_DIR/requirements.txt
-        python scripts/python_file_lister.py bin/octobot_packages_files.txt $OCTOBOT_REPOSITORY_DIR
-        python scripts/insert_imports.py $OCTOBOT_REPOSITORY_DIR/octobot/cli.py
-        cp -R bin $OCTOBOT_REPOSITORY_DIR
-        cd $OCTOBOT_REPOSITORY_DIR
-        python ../scripts/fetch_nltk_data.py words $NLTK_DATA
-        python setup.py build_ext --inplace
-        python -m PyInstaller bin/start.spec
-        mv dist/OctoBot ./OctoBot_${{ matrix.os }}_${{ matrix.arch }} && rm -rf dist/
-        ./OctoBot_${{ matrix.os }}_${{ matrix.arch }} --version
+        BUILD_ARCH: ${{ matrix.arch }}
+      run: bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on Windows
       if: matrix.os == 'windows-latest'
@@ -50,27 +71,21 @@ jobs:
         OCTOBOT_DEFAULT_BRANCH: dev
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
-      run: |
-        pip install -U pip setuptools wheel
-        pip install -r requirements.txt
-        git clone -q $env:OCTOBOT_GH_REPO -b $env:OCTOBOT_DEFAULT_BRANCH
-        pip install --prefer-binary -r $env:OCTOBOT_REPOSITORY_DIR/dev_requirements.txt -r $env:OCTOBOT_REPOSITORY_DIR/requirements.txt
-        python scripts/python_file_lister.py bin/octobot_packages_files.txt $env:OCTOBOT_REPOSITORY_DIR
-        python scripts/insert_imports.py $env:OCTOBOT_REPOSITORY_DIR/octobot/cli.py
-        Copy-Item bin $env:OCTOBOT_REPOSITORY_DIR -recurse
-        cd $env:OCTOBOT_REPOSITORY_DIR
-        python ../scripts/fetch_nltk_data.py words $NLTK_DATA
-        python setup.py build_ext --inplace
-        python -m PyInstaller bin/start.spec
-        Rename-Item dist/OctoBot.exe OctoBot_windows.exe
-        Copy-Item dist/OctoBot_windows.exe OctoBot_windows.exe
-        dist/OctoBot_windows.exe --version
+      run: .\build_scripts\windows.ps1
+      shell: powershell
 
     - uses: actions/upload-artifact@v2
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'ubuntu-latest'
       with:
         name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        path: OctoBot/OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        path: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        if-no-files-found: error
+
+    - uses: actions/upload-artifact@v2
+      if: matrix.os == 'macos-latest'
+      with:
+        name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
+        path: OctoBot/OctoBot_${{ matrix.arch }}
         if-no-files-found: error
 
     - uses: actions/upload-artifact@v2
@@ -104,6 +119,12 @@ jobs:
           name: OctoBot_ubuntu-latest_x64
           path: OctoBot_linux_x64
 
+      - name: Download Linux arm64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: OctoBot_ubuntu-latest_arm64
+          path: OctoBot_linux_arm64
+
       - name: Download MacOs x64 artifact
         uses: actions/download-artifact@v2
         with:
@@ -114,6 +135,7 @@ jobs:
         id: hashes
         run: |
           echo ::set-output name=octobot_linux_x64_hash::$(openssl sha256 OctoBot_linux_x64/OctoBot_ubuntu-latest_x64 | awk '{print $2}')
+          echo ::set-output name=octobot_linux_arm64_hash::$(openssl sha256 OctoBot_linux_arm64/OctoBot_ubuntu-latest_arm64 | awk '{print $2}')
           echo ::set-output name=octobot_macos_x64_hash::$(openssl sha256 OctoBot_macos_x64/OctoBot_macos-latest_x64 | awk '{print $2}')
           echo ::set-output name=octobot_windows_x64_hash::$(openssl sha256 OctoBot_windows_x64.exe/OctoBot_windows.exe | awk '{print $2}')
 
@@ -134,6 +156,7 @@ jobs:
             | ------------- |:-------------:|
             | OctoBot_windows_x64.exe | ${{ steps.hashes.outputs.octobot_windows_x64_hash }} |
             | OctoBot_linux_x64 | ${{ steps.hashes.outputs.octobot_linux_x64_hash }} |
+            | OctoBot_linux_arm64 | ${{ steps.hashes.outputs.octobot_linux_arm64_hash }} |
             | OctoBot_macos_x64 | ${{ steps.hashes.outputs.octobot_macos_x64_hash }} |
 
       - name: Upload Release Asset
@@ -154,6 +177,16 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: OctoBot_linux_x64/OctoBot_ubuntu-latest_x64
           asset_name: OctoBot_linux_x64
+          asset_content_type: application/x-binary
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: OctoBot_linux_arm64/OctoBot_ubuntu-latest_arm64
+          asset_name: OctoBot_linux_arm64
           asset_content_type: application/x-binary
 
       - name: Upload Release Asset
