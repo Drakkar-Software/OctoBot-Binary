@@ -3,12 +3,17 @@ on: push
 
 jobs:
   builds:
-    name: ${{ matrix.os }}${{ matrix.arch }} - Python 3.8 - build
+    name: ${{ matrix.os }} - ${{ matrix.arch }} - Python 3.8 - build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        arch: [ x64 ]
+        arch: [ x64, arm64 ]
+        exclude:
+          - os: macos-latest
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
 
     steps:
     - uses: actions/checkout@v2
@@ -17,40 +22,37 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8.x'
-        architecture: ${{ matrix.arch }}
+        architecture: x64
 
-    - name: Set up QEMU
-      if: matrix.os == 'ubuntu-latest'
-      uses: docker/setup-qemu-action@v1
-
-    - name: Set up Docker Buildx
-      if: matrix.os == 'ubuntu-latest'
-      uses: docker/setup-buildx-action@v1
+    - name: Build OctoBot Binary on Linux arm64
+      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'arm64'
+      uses: uraimo/run-on-arch-action@v2.0.5
+      with:
+        arch: aarch64
+        distro: ubuntu20.04
+        githubToken: ${{ github.token }}
+        env: |
+          GH_REPO: Drakkar-Software/OctoBot-Tentacles
+          OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
+          OCTOBOT_DEFAULT_BRANCH: dev
+          OCTOBOT_REPOSITORY_DIR: OctoBot
+          NLTK_DATA: nltk_data
+          BUILD_ARCH: ${{ matrix.arch }}
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3.8 python3-pip python3-dev git gcc musl-dev libc-dev build-essential zlib1g zlib1g-dev
+          bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on Linux
-      if: matrix.os == 'ubuntu-latest'
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        builder: ${{ steps.buildx.outputs.name }}
-        platforms: linux/amd64,linux/arm64
-        push: false
-        load: true
-        tags: octobot_builder:latest
-        build-args: |
-          GH_REPO=Drakkar-Software/OctoBot-Tentacles
-          OCTOBOT_GH_REPO=https://github.com/Drakkar-Software/OctoBot.git
-          OCTOBOT_DEFAULT_BRANCH=dev
-          OCTOBOT_REPOSITORY_DIR=OctoBot
-          NLTK_DATA=nltk_data
-          BUILD_ARCH=${{ matrix.arch }}
-
-    - name: Extract OctoBot binary from image
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        docker create --name extract octobot_builder:latest
-        docker cp extract:/build/OctoBot_${{ matrix.arch }} OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        docker rm extract
+      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'x64'
+      env:
+        GH_REPO: Drakkar-Software/OctoBot-Tentacles
+        OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
+        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_REPOSITORY_DIR: OctoBot
+        NLTK_DATA: nltk_data
+        BUILD_ARCH: ${{ matrix.arch }}
+      run: bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on MacOS
       if: matrix.os == 'macos-latest'
@@ -75,14 +77,7 @@ jobs:
       shell: powershell
 
     - uses: actions/upload-artifact@v2
-      if: matrix.os == 'ubuntu-latest'
-      with:
-        name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        path: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
-        if-no-files-found: error
-
-    - uses: actions/upload-artifact@v2
-      if: matrix.os == 'macos-latest'
+      if: matrix.os != 'windows-latest'
       with:
         name: OctoBot_${{ matrix.os }}_${{ matrix.arch }}
         path: OctoBot/OctoBot_${{ matrix.arch }}
