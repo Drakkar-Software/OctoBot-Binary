@@ -30,6 +30,7 @@ logger.setLevel(logging.DEBUG)
 
 BINARY_DISABLE_WEB_OPTION = "-nw"
 LOG_CHECKS_MAX_ATTEMPTS = 300
+DEFAULT_TIMEOUT_WINDOW = -95
 
 
 @pytest.fixture
@@ -61,7 +62,7 @@ def start_binary_without_web_app():
 
 def start_binary_process(binary_options, output_file, err_file):
     logger.debug("Starting binary process...")
-    return subprocess.Popen(f"{get_binary_file_path()} {binary_options}",
+    return subprocess.Popen(f"{get_binary_file_path()}{f' {binary_options}' if binary_options else ''}",
                             shell=True,
                             stdout=output_file,
                             stderr=err_file,
@@ -69,19 +70,21 @@ def start_binary_process(binary_options, output_file, err_file):
 
 
 def terminate_binary(binary_process, output_file, err_file):
-    logger.info(output_file.read())
-    errors = err_file.read()
-    if errors:
-        logger.error(errors)
-        raise ValueError(f"Error happened during process execution : {errors}")
-    logger.debug("Killing binary process...")
-    if is_on_windows():
-        os.kill(binary_process.pid, signal.CTRL_C_EVENT)
-    else:
-        try:
-            os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
-        except ProcessLookupError:
-            binary_process.kill()
+    try:
+        logger.info(output_file.read())
+        errors = err_file.read()
+        if errors:
+            logger.error(errors)
+            raise ValueError(f"Error happened during process execution : {errors}")
+    finally:
+        logger.debug("Killing binary process...")
+        if is_on_windows():
+            subprocess.call(["taskkill", "/F", "/IM", "OctoBot_windows.exe"])
+        else:
+            try:
+                os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            except ProcessLookupError:
+                binary_process.kill()
 
 
 def multiple_checks(check_method, sleep_time=1, max_attempts=10, **kwargs):
@@ -120,6 +123,7 @@ def check_logs_content(expected_content: str, should_appear: bool = True):
     return expected_content not in log_content
 
 
+@pytest.mark.timeout(100 + DEFAULT_TIMEOUT_WINDOW)
 def test_terms_endpoint(start_binary):
     multiple_checks(check_endpoint,
                     max_attempts=100,
@@ -127,12 +131,14 @@ def test_terms_endpoint(start_binary):
                     expected_code=200)
 
 
+@pytest.mark.timeout(LOG_CHECKS_MAX_ATTEMPTS + DEFAULT_TIMEOUT_WINDOW)
 def test_evaluation_state_created(start_binary_without_web_app):
     multiple_checks(check_logs_content,
                     max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
                     expected_content="new state:")
 
 
+@pytest.mark.timeout(LOG_CHECKS_MAX_ATTEMPTS + DEFAULT_TIMEOUT_WINDOW)
 def test_logs_content_has_no_errors(start_binary_without_web_app):
     multiple_checks(check_logs_content,
                     max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
@@ -140,6 +146,7 @@ def test_logs_content_has_no_errors(start_binary_without_web_app):
                     should_appear=False)
 
 
+@pytest.mark.timeout(LOG_CHECKS_MAX_ATTEMPTS + DEFAULT_TIMEOUT_WINDOW)
 def test_balance_profitability_updated(start_binary_without_web_app):
     multiple_checks(check_logs_content,
                     max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
