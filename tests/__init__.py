@@ -37,12 +37,16 @@ def delete_folder_if_exists(folder_path):
 
 
 def clear_octobot_previous_folders():
-    for folder_path in [
-        "logs",
-        "tentacles",
-        "user"
-    ]:
-        delete_folder_if_exists(folder_path)
+    try:
+        for folder_path in [
+            "logs",
+            "tentacles",
+            "user"
+        ]:
+            delete_folder_if_exists(folder_path)
+    except PermissionError:
+        # Windows file conflict
+        pass
 
 
 def get_log_file_content(log_file_path="logs/OctoBot.log"):

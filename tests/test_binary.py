@@ -19,11 +19,9 @@ import signal
 import subprocess
 from tempfile import TemporaryFile
 
-import platform
+import pytest
 import requests
 import time
-
-import pytest
 
 from tests import get_binary_file_path, clear_octobot_previous_folders, get_log_file_content, is_on_windows
 
@@ -31,27 +29,37 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 BINARY_DISABLE_WEB_OPTION = "-nw"
+LOG_CHECKS_MAX_ATTEMPTS = 300
 
 
 @pytest.fixture
 def start_binary():
     clear_octobot_previous_folders()
     with TemporaryFile() as output, TemporaryFile() as err:
-        binary_process = create_binary("", output, err)
-        yield
-        terminate_binary(binary_process, output, err)
+        binary_process = start_binary_process("", output, err)
+        try:
+            yield
+        except Exception:
+            pass
+        finally:
+            terminate_binary(binary_process, output, err)
 
 
 @pytest.fixture
 def start_binary_without_web_app():
     clear_octobot_previous_folders()
     with TemporaryFile() as output, TemporaryFile() as err:
-        binary_process = create_binary(BINARY_DISABLE_WEB_OPTION, output, err)
-        yield
-        terminate_binary(binary_process, output, err)
+        binary_process = start_binary_process(BINARY_DISABLE_WEB_OPTION, output, err)
+        logger.debug(err.read())
+        try:
+            yield
+        except Exception:
+            pass
+        finally:
+            terminate_binary(binary_process, output, err)
 
 
-def create_binary(binary_options, output_file, err_file):
+def start_binary_process(binary_options, output_file, err_file):
     logger.debug("Starting binary process...")
     return subprocess.Popen(f"{get_binary_file_path()} {binary_options}",
                             shell=True,
@@ -68,7 +76,7 @@ def terminate_binary(binary_process, output_file, err_file):
         raise ValueError(f"Error happened during process execution : {errors}")
     logger.debug("Killing binary process...")
     if is_on_windows():
-        binary_process.kill()
+        os.kill(binary_process.pid, signal.CTRL_C_EVENT)
     else:
         try:
             os.killpg(os.getpgid(binary_process.pid), signal.SIGTERM)  # Send the signal to all the process groups
@@ -76,36 +84,63 @@ def terminate_binary(binary_process, output_file, err_file):
             binary_process.kill()
 
 
-def test_version_endpoint(start_binary):
-    max_attempts = 10
+def multiple_checks(check_method, sleep_time=1, max_attempts=10, **kwargs):
     attempt = 1
     while max_attempts >= attempt > 0:
         try:
-            requests.get('http://localhost:5001/version')
-            attempt = -1  # success
-        except requests.exceptions.ConnectionError:
-            logger.warning(f"Failed to get http://localhost/version, retrying ({attempt}/{max_attempts})...")
+            result = check_method(**kwargs)
+            if result:  # success
+                return
+        except Exception as e:
+            logger.warning(f"Check ({attempt}/{max_attempts}) failed : {e}")
+        finally:
             attempt += 1
-            time.sleep(1)
-    assert attempt <= max_attempts
+            try:
+                time.sleep(sleep_time)
+            except KeyboardInterrupt:
+                # Fails when windows is stopping binary
+                pass
+    assert False  # fail
+
+
+def check_endpoint(endpoint_url, expected_code):
+    try:
+        result = requests.get(endpoint_url)
+        return result.status_code == expected_code
+    except requests.exceptions.ConnectionError:
+        logger.warning(f"Failed to get {endpoint_url}")
+        return False
+
+
+def check_logs_content(expected_content: str, should_appear: bool = True):
+    log_content = get_log_file_content()
+    logger.debug(log_content)
+    if should_appear:
+        return expected_content in log_content
+    return expected_content not in log_content
+
+
+def test_terms_endpoint(start_binary):
+    multiple_checks(check_endpoint,
+                    max_attempts=100,
+                    endpoint_url="http://localhost:5001/terms",
+                    expected_code=200)
 
 
 def test_evaluation_state_created(start_binary_without_web_app):
-    time.sleep(10)
-    log_content = get_log_file_content()
-    logger.debug(log_content)
-    assert "new state:" in log_content
+    multiple_checks(check_logs_content,
+                    max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
+                    expected_content="new state:")
 
 
 def test_logs_content_has_no_errors(start_binary_without_web_app):
-    time.sleep(10)
-    log_content = get_log_file_content()
-    logger.debug(log_content)
-    assert "ERROR" not in log_content
+    multiple_checks(check_logs_content,
+                    max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
+                    expected_content="ERROR",
+                    should_appear=False)
 
 
 def test_balance_profitability_updated(start_binary_without_web_app):
-    time.sleep(10)
-    log_content = get_log_file_content()
-    logger.debug(log_content)
-    assert "BALANCE PROFITABILITY :" in log_content
+    multiple_checks(check_logs_content,
+                    max_attempts=LOG_CHECKS_MAX_ATTEMPTS,
+                    expected_content="BALANCE PROFITABILITY :")

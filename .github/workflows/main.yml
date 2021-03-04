@@ -2,7 +2,7 @@ name: OctoBot-Binary-CI
 on: push
 
 jobs:
-  builds:
+  build:
     name: ${{ matrix.os }} - ${{ matrix.arch }} - Python 3.8 - build
     runs-on: ${{ matrix.os }}
     strategy:
@@ -59,7 +59,7 @@ jobs:
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_DEFAULT_BRANCH: master
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
         BUILD_ARCH: ${{ matrix.arch }}
@@ -70,7 +70,7 @@ jobs:
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_DEFAULT_BRANCH: master
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
       run: .\build_scripts\windows.ps1
@@ -122,7 +122,7 @@ jobs:
       - name: Test OctoBot Binary on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          pytest tests
+          pytest tests --full-trace
 
       - name: Download Linux x64 artifact
         if: matrix.os == 'ubuntu-latest'
