@@ -91,7 +91,7 @@ jobs:
         if-no-files-found: error
 
   test:
-    name: ${{ matrix.os }}${{ matrix.arch }} - Python 3.8 - test
+    name: ${{ matrix.os }} - ${{ matrix.arch }} - Python 3.8 - test
     needs:
       - build
     runs-on: ${{ matrix.os }}
