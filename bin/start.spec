@@ -20,7 +20,7 @@ a = Analysis(['../start.py'],
              "gevent", "geventwebsocket", "flask_socketio", "newspaper", "vaderSentiment",
              "vaderSentiment.vaderSentiment",
              "aiofiles",
-             "ccxt", "ccxt.async_support", "cryptography", "websockets", "yarl", "idna", "sortedcontainers"
+             "ccxt", "ccxt.async_support", "cryptofeed", "cryptography", "websockets", "yarl", "idna", "sortedcontainers"
              ] + OCTOBOT_PACKAGES_FILES,
              excludes=["tentacles", "logs", "user"],
              hookspath=[],
