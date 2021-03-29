@@ -146,6 +146,7 @@ jobs:
           repo: OctoBot
           draft: false
           prerelease: false
+          commitish: master
           body: |
             | Binary        | SHA256        |
             | ------------- |:-------------:|
