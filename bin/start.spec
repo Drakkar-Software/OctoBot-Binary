@@ -17,7 +17,7 @@ a = Analysis(['../start.py'],
              "tulipy",
              "praw", "twitter", "simplifiedpytrends", "simplifiedpytrends.exceptions", "simplifiedpytrends.request",
              "pyngrok", "pyngrok.ngrok", "flask", "flask_login", "wtforms", "wtforms.fields.html5", "flask_wtf",
-             "gevent", "geventwebsocket", "flask_socketio", "newspaper", "vaderSentiment",
+             "gevent", "geventwebsocket", "flask_socketio", "newspaper", "vaderSentiment", "sentry_sdk",
              "vaderSentiment.vaderSentiment",
              "aiofiles",
              "ccxt", "ccxt.async_support", "cryptofeed", "cmath", "cryptography", "websockets", "yarl", "idna", "sortedcontainers"
