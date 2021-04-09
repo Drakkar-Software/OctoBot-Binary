@@ -129,9 +129,9 @@ jobs:
       - name: Compute hashes
         id: hashes
         run: |
-          echo ::set-output name=octobot_linux_x64_hash::$(openssl sha256 OctoBot_linux_x64/OctoBot_ubuntu-latest_x64 | awk '{print $2}')
-          echo ::set-output name=octobot_linux_arm64_hash::$(openssl sha256 OctoBot_linux_arm64/OctoBot_ubuntu-latest_arm64 | awk '{print $2}')
-          echo ::set-output name=octobot_macos_x64_hash::$(openssl sha256 OctoBot_macos_x64/OctoBot_macos-latest_x64 | awk '{print $2}')
+          echo ::set-output name=octobot_linux_x64_hash::$(openssl sha256 OctoBot_linux_x64/OctoBot_x64 | awk '{print $2}')
+          echo ::set-output name=octobot_linux_arm64_hash::$(openssl sha256 OctoBot_linux_arm64/OctoBot_arm64 | awk '{print $2}')
+          echo ::set-output name=octobot_macos_x64_hash::$(openssl sha256 OctoBot_macos_x64/OctoBot_x64 | awk '{print $2}')
           echo ::set-output name=octobot_windows_x64_hash::$(openssl sha256 OctoBot_windows_x64.exe/OctoBot_windows.exe | awk '{print $2}')
 
       - name: Create Release
@@ -171,7 +171,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: OctoBot_linux_x64/OctoBot_ubuntu-latest_x64
+          asset_path: OctoBot_linux_x64/OctoBot_x64
           asset_name: OctoBot_linux_x64
           asset_content_type: application/x-binary
 
@@ -181,7 +181,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: OctoBot_linux_arm64/OctoBot_ubuntu-latest_arm64
+          asset_path: OctoBot_linux_arm64/OctoBot_arm64
           asset_name: OctoBot_linux_arm64
           asset_content_type: application/x-binary
 
@@ -191,7 +191,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.AUTH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: OctoBot_macos_x64/OctoBot_macos-latest_x64
+          asset_path: OctoBot_macos_x64/OctoBot_x64
           asset_name: OctoBot_macos_x64
           asset_content_type: application/x-binary
 
