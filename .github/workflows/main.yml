@@ -144,7 +144,7 @@ jobs:
           release_name: Release - ${{ steps.vars.outputs.tag }}
           owner: ${{ github.repository_owner }}
           repo: OctoBot
-          draft: false
+          draft: true
           prerelease: false
           commitish: master
           body: |
