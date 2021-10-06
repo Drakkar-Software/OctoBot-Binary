@@ -1,5 +1,8 @@
 name: OctoBot-Binary-CI
-on: push
+on:
+  schedule:
+    - cron: '0 5 * * 1' # every monday at 5am
+  push:
 
 jobs:
   builds:
