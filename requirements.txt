@@ -1,3 +1,6 @@
-pyinstaller>=4.0
+# pyinstaller >= 4.6 is producing a startup error:
+#   "FileNotFoundError: [Errno 2] No such file or directory: C:\\Users\\zyx\\AppData\\Local\\Temp\\_MEI149482\\jsonschema\\schemas\\draft3.json"
+#   "Failed to execute script 'start' due to unhandled exception!"
+pyinstaller==4.5.1
 nltk
-jsonschema==2.6.0
+jsonschema==3.2.0
