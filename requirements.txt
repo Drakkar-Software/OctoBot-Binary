@@ -1,6 +1,3 @@
-# pyinstaller >= 4.6 is producing a startup error:
-#   "FileNotFoundError: [Errno 2] No such file or directory: C:\\Users\\zyx\\AppData\\Local\\Temp\\_MEI149482\\jsonschema\\schemas\\draft3.json"
-#   "Failed to execute script 'start' due to unhandled exception!"
-pyinstaller==4.5.1
+pyinstaller==4.10   # for now deadlock on numpy with version >5 (tested up to 5.1)
 nltk
 jsonschema==3.2.0
