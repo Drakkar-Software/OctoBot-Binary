@@ -13,6 +13,7 @@ a = Analysis(['../start.py'],
              hiddenimports=[
              "colorlog", "numpy.core._dtype_ctypes",
              "aiosqlite", "aiohttp",
+             "psutil",
              "telegram", "telegram.ext", "telethon", "jsonschema",
              "tulipy",
              "asyncpraw", "twitter", "simplifiedpytrends", "simplifiedpytrends.exceptions", "simplifiedpytrends.request",
