@@ -11,7 +11,7 @@ a = Analysis(['../start.py'],
                 ('../octobot/strategy_optimizer/optimizer_data_files', 'octobot/strategy_optimizer/optimizer_data_files')
              ],
              hiddenimports=[
-             "colorlog", "numpy.core._dtype_ctypes",
+             "colorlog", "numpy.core._dtype_ctypes", "dotenv",
              "aiosqlite", "aiohttp",
              "psutil",
              "telegram", "telegram.ext", "telethon", "jsonschema",
