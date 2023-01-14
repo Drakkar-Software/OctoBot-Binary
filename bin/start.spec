@@ -23,7 +23,7 @@ a = Analysis(['../start.py'],
              "newspaper", "vaderSentiment",
              "vaderSentiment.vaderSentiment",
              "aiofiles",
-             "ccxt", "ccxt.async_support", "cryptofeed", "order_book", "cmath", "cryptography", "websockets", "yarl", "idna", "sortedcontainers",
+             "ccxt", "ccxt.async_support", "ccxt.pro", "order_book", "cmath", "cryptography", "websockets", "yarl", "idna", "sortedcontainers",
              "websockets.legacy", "websockets.legacy.auth", "websockets.legacy.client", "websockets.legacy.compatibility",
              "websockets.legacy.framing", "websockets.legacy.handshake", "websockets.legacy.http", "websockets.legacy.protocol",
              "websockets.legacy.server"
