@@ -6,7 +6,7 @@ on:
 
 jobs:
   builds:
-    name: ${{ matrix.os }} - ${{ matrix.arch }} - Python 3.8 - build
+    name: ${{ matrix.os }} - ${{ matrix.arch }} - Python 3.10 - build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,12 +19,12 @@ jobs:
             arch: arm64
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.8.x'
+        python-version: '3.10.x'
         architecture: x64
 
     - name: Build OctoBot Binary on Linux arm64
@@ -43,7 +43,7 @@ jobs:
           BUILD_ARCH: ${{ matrix.arch }}
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends python3.8 python3-pip python3-dev git gcc musl-dev libc-dev build-essential zlib1g zlib1g-dev
+          apt-get install -y --no-install-recommends python3.10 python3-pip python3-dev git gcc musl-dev libc-dev build-essential zlib1g zlib1g-dev
           bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on Linux
@@ -80,7 +80,7 @@ jobs:
       shell: powershell
 
     - name: Upload OctoBot Binary on MacOS
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: matrix.os == 'macos-latest'
       with:
         name: OctoBot_macos_${{ matrix.arch }}
@@ -88,7 +88,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload OctoBot Binary on Linux
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: matrix.os == 'ubuntu-20.04'
       with:
         name: OctoBot_linux_${{ matrix.arch }}
@@ -96,7 +96,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload OctoBot Binary on Windows
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: matrix.os == 'windows-latest'
       with:
         name: OctoBot_windows_${{ matrix.arch }}.exe
@@ -113,7 +113,7 @@ jobs:
       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
     - name: Download artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
 
     - name: Clean artifact names
       run: |
