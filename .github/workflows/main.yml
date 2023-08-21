@@ -37,7 +37,7 @@ jobs:
         env: |
           GH_REPO: Drakkar-Software/OctoBot-Tentacles
           OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-          OCTOBOT_DEFAULT_BRANCH: dev
+          OCTOBOT_DEFAULT_BRANCH: dev_pre_supabase
           OCTOBOT_REPOSITORY_DIR: OctoBot
           NLTK_DATA: nltk_data
           BUILD_ARCH: ${{ matrix.arch }}
@@ -51,7 +51,7 @@ jobs:
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_DEFAULT_BRANCH: dev_pre_supabase
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
         BUILD_ARCH: ${{ matrix.arch }}
@@ -62,7 +62,7 @@ jobs:
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_DEFAULT_BRANCH: dev_pre_supabase
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
         BUILD_ARCH: ${{ matrix.arch }}
@@ -73,7 +73,7 @@ jobs:
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
+        OCTOBOT_DEFAULT_BRANCH: dev_pre_supabase
         OCTOBOT_REPOSITORY_DIR: OctoBot
         NLTK_DATA: nltk_data
       run: .\build_scripts\windows.ps1
