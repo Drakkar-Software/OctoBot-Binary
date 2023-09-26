@@ -100,7 +100,6 @@ jobs:
     - name: Compute hashes
       run: |
         sha256sum OctoBot_linux_x64 > OctoBot_linux_x64.sha256sum
-        sha256sum OctoBot_linux_arm64 > OctoBot_linux_arm64.sha256sum
         sha256sum OctoBot_macos_x64 > OctoBot_macos_x64.sha256sum
         sha256sum OctoBot_windows_x64.exe > OctoBot_windows_x64.exe.sha256sum
 
@@ -188,7 +187,6 @@ jobs:
             | ------------- |:-------------:|
             | Windows x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_windows_x64.exe) |
             | Linux x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_linux_x64) |
-            | Linux arm64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_linux_arm64) |
             | MacOS x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_macos_x64) |
 
             Add .sha256sum to the download url to get each binary checksum
