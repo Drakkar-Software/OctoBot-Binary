@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-20.04 ]
+        os: [ windows-latest, ubuntu-20.04 ]
         arch: [ x64 ]
 
     steps:
@@ -33,17 +33,6 @@ jobs:
         BUILD_ARCH: ${{ matrix.arch }}
       run: bash ./build_scripts/unix.sh
 
-    - name: Build OctoBot Binary on MacOS
-      if: matrix.os == 'macos-latest'
-      env:
-        GH_REPO: Drakkar-Software/OctoBot-Tentacles
-        OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-        OCTOBOT_DEFAULT_BRANCH: dev
-        OCTOBOT_REPOSITORY_DIR: OctoBot
-        NLTK_DATA: nltk_data
-        BUILD_ARCH: ${{ matrix.arch }}
-      run: bash ./build_scripts/unix.sh
-
     - name: Build OctoBot Binary on Windows
       if: matrix.os == 'windows-latest'
       env:
@@ -54,14 +43,6 @@ jobs:
         NLTK_DATA: nltk_data
       run: .\build_scripts\windows.ps1
       shell: powershell
-
-    - name: Upload OctoBot Binary on MacOS
-      uses: actions/upload-artifact@v3
-      if: matrix.os == 'macos-latest'
-      with:
-        name: OctoBot_macos_${{ matrix.arch }}
-        path: OctoBot/OctoBot_${{ matrix.arch }}
-        if-no-files-found: error
 
     - name: Upload OctoBot Binary on Linux
       uses: actions/upload-artifact@v3
@@ -100,7 +81,6 @@ jobs:
     - name: Compute hashes
       run: |
         sha256sum OctoBot_linux_x64 > OctoBot_linux_x64.sha256sum
-        sha256sum OctoBot_macos_x64 > OctoBot_macos_x64.sha256sum
         sha256sum OctoBot_windows_x64.exe > OctoBot_windows_x64.exe.sha256sum
 
     - name: Upload binary as weekly
@@ -187,7 +167,6 @@ jobs:
             | ------------- |:-------------:|
             | Windows x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_windows_x64.exe) |
             | Linux x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_linux_x64) |
-            | MacOS x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_macos_x64) |
 
             Add .sha256sum to the download url to get each binary checksum
 
