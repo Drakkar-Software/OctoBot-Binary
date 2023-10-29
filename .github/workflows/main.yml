@@ -11,12 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-20.04 ]
-        arch: [ x64, arm64 ]
-        exclude:
-          - os: macos-latest
-            arch: arm64
-          - os: windows-latest
-            arch: arm64
+        arch: [ x64 ]
 
     steps:
     - uses: actions/checkout@v3
@@ -26,25 +21,6 @@ jobs:
       with:
         python-version: '3.10.x'
         architecture: x64
-
-    - name: Build OctoBot Binary on Linux arm64
-      if: matrix.os == 'ubuntu-20.04' && matrix.arch == 'arm64'
-      uses: uraimo/run-on-arch-action@v2.0.5
-      with:
-        arch: aarch64
-        distro: ubuntu20.04
-        githubToken: ${{ github.token }}
-        env: |
-          GH_REPO: Drakkar-Software/OctoBot-Tentacles
-          OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
-          OCTOBOT_DEFAULT_BRANCH: dev
-          OCTOBOT_REPOSITORY_DIR: OctoBot
-          NLTK_DATA: nltk_data
-          BUILD_ARCH: ${{ matrix.arch }}
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends python3.10 python3-pip python3-dev git gcc musl-dev libc-dev build-essential zlib1g zlib1g-dev
-          bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on Linux
       if: matrix.os == 'ubuntu-20.04' && matrix.arch == 'x64'
@@ -124,7 +100,6 @@ jobs:
     - name: Compute hashes
       run: |
         sha256sum OctoBot_linux_x64 > OctoBot_linux_x64.sha256sum
-        sha256sum OctoBot_linux_arm64 > OctoBot_linux_arm64.sha256sum
         sha256sum OctoBot_macos_x64 > OctoBot_macos_x64.sha256sum
         sha256sum OctoBot_windows_x64.exe > OctoBot_windows_x64.exe.sha256sum
 
@@ -212,7 +187,6 @@ jobs:
             | ------------- |:-------------:|
             | Windows x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_windows_x64.exe) |
             | Linux x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_linux_x64) |
-            | Linux arm64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_linux_arm64) |
             | MacOS x64 | [Download](${{ secrets.RELEASE_BASE_URL }}${{ steps.vars.outputs.tag }}/OctoBot_macos_x64) |
 
             Add .sha256sum to the download url to get each binary checksum
