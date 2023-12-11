@@ -12,7 +12,7 @@ OctoBot binaries is dedicated to create and upload binaries for Windows, Linux a
 ```
 $ chmod +x OctoBot_linux
 $ ./OctoBot_linux
-```
+``` 
 
 **Replace `OctoBot_linux` by `OctoBot_osx` on MacOS**
 
