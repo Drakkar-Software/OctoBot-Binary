@@ -1,3 +1,2 @@
-pyinstaller==5.10.1
+pyinstaller==6.3.0
 nltk
-jsonschema==3.2.0
