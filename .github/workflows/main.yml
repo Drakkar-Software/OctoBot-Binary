@@ -10,10 +10,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-22.04 ]
+        os: [ macos-13, windows-latest, ubuntu-22.04 ]
         arch: [ x64, arm64 ]
         exclude:
-          - os: macos-latest
+          - os: macos-13
             arch: arm64
           - os: windows-latest
             arch: arm64
@@ -58,7 +58,7 @@ jobs:
       run: bash ./build_scripts/unix.sh
 
     - name: Build OctoBot Binary on MacOS
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-13'
       env:
         GH_REPO: Drakkar-Software/OctoBot-Tentacles
         OCTOBOT_GH_REPO: https://github.com/Drakkar-Software/OctoBot.git
@@ -81,7 +81,7 @@ jobs:
 
     - name: Upload OctoBot Binary on MacOS
       uses: actions/upload-artifact@v3
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-13'
       with:
         name: OctoBot_macos_${{ matrix.arch }}
         path: OctoBot/OctoBot_${{ matrix.arch }}
