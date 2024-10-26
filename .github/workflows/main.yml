@@ -29,7 +29,7 @@ jobs:
 
     - name: Build OctoBot Binary on Linux arm64
       if: matrix.os == 'ubuntu-22.04' && matrix.arch == 'arm64'
-      uses: uraimo/run-on-arch-action@v2.6.0
+      uses: uraimo/run-on-arch-action@v2.8.1
       with:
         arch: aarch64
         distro: ubuntu22.04
