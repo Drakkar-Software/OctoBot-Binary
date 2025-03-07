@@ -80,7 +80,7 @@ jobs:
       shell: powershell
 
     - name: Upload OctoBot Binary on MacOS
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: matrix.os == 'macos-13'
       with:
         name: OctoBot_macos_${{ matrix.arch }}
@@ -88,7 +88,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload OctoBot Binary on Linux
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: matrix.os == 'ubuntu-22.04'
       with:
         name: OctoBot_linux_${{ matrix.arch }}
@@ -96,7 +96,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload OctoBot Binary on Windows
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: matrix.os == 'windows-latest'
       with:
         name: OctoBot_windows_${{ matrix.arch }}.exe
@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Set version as environement var
         id: vars
