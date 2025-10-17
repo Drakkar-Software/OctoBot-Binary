@@ -33,7 +33,7 @@ def _explore_module(package_entry, root=""):
 def _get_octobot_packages(packages_path):
     for entry in os.scandir(packages_path):
         if (entry.name.startswith(OCTOBOT_PREFIX) or entry.name in OTHER_MODULES) \
-                and not entry.name.endswith("-info"):
+                and not entry.name.endswith("-info") and not entry.name.endswith(".hcl"):
             yield entry
 
 
