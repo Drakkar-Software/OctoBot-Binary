@@ -13,6 +13,7 @@ a = Analysis(['../start.py'],
              hiddenimports=[
              "colorlog", "numpy.core._dtype_ctypes", "dotenv", "pgpy",
              "aiosqlite", "aiohttp",
+             "pyarrow", "pyiceberg",
              "psutil",
              "telegram", "telegram.ext", "telethon", "jsonschema",
              "tulipy",
